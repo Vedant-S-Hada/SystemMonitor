@@ -36,47 +36,52 @@ If you wish to compile it yourself using MSYS2 MinGW-w64:
 ```bash
 g++ -std=c++17 -D_WIN32_WINNT=0x0600 -Ivendor/imgui -Ivendor/imgui/backends gui_main.cpp CPUMonitor.cpp RAMMonitor.cpp DiskMonitor.cpp ProcessMonitor.cpp vendor/imgui/imgui.cpp vendor/imgui/imgui_draw.cpp vendor/imgui/imgui_tables.cpp vendor/imgui/imgui_widgets.cpp vendor/imgui/backends/imgui_impl_win32.cpp vendor/imgui/backends/imgui_impl_dx11.cpp -o sysmon_gui.exe -static -lpsapi -ld3d11 -ld3dcompiler -ldxgi -ldwmapi -mwindows
 ``
-usecaseDiagram
-    %% Actor Definition (Stick figure)
-    actor User
+### Detailed Use Case Diagram
+
+```mermaid
+flowchart LR
+    %% Actor Definition
+    User((User))
 
     %% Detailed System Boundary
-    package "System Resource Monitor" {
-        usecase "View CPU (Overview)" as CPU_View
-        usecase "View Detailed CPU Cores" as CPU_Cores
-        usecase "View CPU Load History" as CPU_Hist
-        usecase "View RAM (Total/Used)" as RAM_View
-        usecase "View Swap Usage" as Swap_View
-        usecase "View Disk I/O (Read/Write)" as Disk_IO
-        usecase "View Disk Latency" as Disk_Lat
-        usecase "View Network Usage" as Net_View
-        usecase "View Processes" as Proc_View
-        usecase "Filter Processes" as Proc_Filter
-        usecase "Kill Process" as Kill_Proc
-        usecase "Log Resource Usage" as Log_Usage
-        usecase "View Historical Data" as Hist_View
-        usecase "Configure Sampling Rate" as Config_Sample
-        usecase "Enable/Disable Logging" as Config_Log
-    }
+    subgraph "System Resource Monitor"
+        CPU_View([View CPU Overview])
+        CPU_Cores([View Detailed CPU Cores])
+        CPU_Hist([View CPU Load History])
+        RAM_View([View RAM Total/Used])
+        Swap_View([View Swap Usage])
+        Disk_IO([View Disk I/O Read/Write])
+        Disk_Lat([View Disk Latency])
+        Net_View([View Network Usage])
+        Proc_View([View Processes])
+        Proc_Filter([Filter Processes])
+        Kill_Proc([Kill Process])
+        Log_Usage([Log Resource Usage])
+        Hist_View([View Historical Data])
+        Config_Sample([Configure Sampling Rate])
+        Config_Log([Enable/Disable Logging])
+    end
 
     %% Main Relationships
-    User --> CPU_View
-    User --> RAM_View
-    User --> Disk_IO
-    User --> Net_View
-    User --> Proc_View
-    User --> Kill_Proc
-    User --> Log_Usage
-    User --> Hist_View
-    User --> Config_Sample
-    User --> Config_Log
+    User --- CPU_View
+    User --- RAM_View
+    User --- Disk_IO
+    User --- Net_View
+    User --- Proc_View
+    User --- Kill_Proc
+    User --- Log_Usage
+    User --- Hist_View
+    User --- Config_Sample
+    User --- Config_Log
 
-    %% Include Relationship (Kill needs view, Filter extend view)
-    Kill_Proc ..> Proc_View : <<include>>
-    Proc_Filter ..> Proc_View : <<extend>>
-    CPU_Cores ..> CPU_View : <<extend>>
-    CPU_Hist ..> CPU_View : <<extend>>
-    Swap_View ..> RAM_View : <<extend>>
-    Disk_Lat ..> Disk_IO : <<extend>>
-    Config_Sample ..> Log_Usage : <<extend>>
-    Hist_View ..> Log_Usage : <<extend>>
+    %% Include & Extend Relationships
+    Kill_Proc -. "<<include>>" .-> Proc_View
+    Proc_Filter -. "<<extend>>" .-> Proc_View
+    CPU_Cores -. "<<extend>>" .-> CPU_View
+    CPU_Hist -. "<<extend>>" .-> CPU_View
+    Swap_View -. "<<extend>>" .-> RAM_View
+    Disk_Lat -. "<<extend>>" .-> Disk_IO
+    Config_Sample -. "<<extend>>" .-> Log_Usage
+    Hist_View -. "<<extend>>" .-> Log_Usage
+```
+
