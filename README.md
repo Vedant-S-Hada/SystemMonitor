@@ -36,3 +36,29 @@ If you wish to compile it yourself using MSYS2 MinGW-w64:
 ```bash
 g++ -std=c++17 -D_WIN32_WINNT=0x0600 -Ivendor/imgui -Ivendor/imgui/backends gui_main.cpp CPUMonitor.cpp RAMMonitor.cpp DiskMonitor.cpp ProcessMonitor.cpp vendor/imgui/imgui.cpp vendor/imgui/imgui_draw.cpp vendor/imgui/imgui_tables.cpp vendor/imgui/imgui_widgets.cpp vendor/imgui/backends/imgui_impl_win32.cpp vendor/imgui/backends/imgui_impl_dx11.cpp -o sysmon_gui.exe -static -lpsapi -ld3d11 -ld3dcompiler -ldxgi -ldwmapi -mwindows
 ```
+### Use Case Diagram
+
+```mermaid
+flowchart LR
+    %% Actor Definition
+    User((User))
+
+    %% System Boundary
+    subgraph System Resource Monitor
+        ViewCPU([View CPU])
+        ViewRAM([View RAM])
+        ViewDisk([View Disk])
+        ViewProc([View Processes])
+        KillProc([Kill Process])
+    end
+
+    %% Relationships
+    User --- ViewCPU
+    User --- ViewRAM
+    User --- ViewDisk
+    User --- ViewProc
+    User --- KillProc
+
+    %% Include Relationship
+    KillProc -. "<<include>>" .-> ViewProc
+```
