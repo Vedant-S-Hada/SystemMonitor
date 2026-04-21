@@ -15,6 +15,8 @@
 #include "RAMMonitor.h"
 #include "DiskMonitor.h"
 #include "ProcessMonitor.h"
+#include "NetworkMonitor.h"
+#include "AlertManager.h"
 #include <vector>
 #include <memory>
 
@@ -99,6 +101,7 @@ int main(int, char**)
     monitors.push_back(std::make_unique<CPUMonitor>());
     monitors.push_back(std::make_unique<RAMMonitor>());
     monitors.push_back(std::make_unique<DiskMonitor>());
+    monitors.push_back(std::make_unique<NetworkMonitor>());
     monitors.push_back(std::make_unique<ProcessMonitor>());
 
     ImVec4 clear_color = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
@@ -158,6 +161,17 @@ int main(int, char**)
             ImGui::Spacing();
             ImGui::Separator();
         }
+
+        // Render Alerts
+        ImGui::Spacing();
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "SYSTEM ALERTS (Observer Pattern)");
+        ImGui::BeginChild("AlertsRegion", ImVec2(0, 100), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        for (const auto& alert : AlertManager::getInstance().getAlerts()) {
+            ImGui::TextColored(ImVec4(1, 0.5f, 0, 1), "[Tick: %lld] %s", alert.timestamp, alert.message.c_str());
+        }
+        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+            ImGui::SetScrollHereY(1.0f);
+        ImGui::EndChild();
 
         ImGui::End();
 

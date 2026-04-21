@@ -13,6 +13,7 @@ struct ProcessInfo {
 class ProcessMonitor : public Monitor {
 private:
     std::vector<ProcessInfo> topProcesses;
+    int selectedProcessIndex = -1;
 public:
     ProcessMonitor();
     void refresh() override;

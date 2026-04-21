@@ -1,4 +1,5 @@
 #include "CPUMonitor.h"
+#include "AlertManager.h"
 #include <iostream>
 #include <string>
 #include <iomanip>
@@ -35,6 +36,12 @@ void CPUMonitor::refresh() {
         unsigned long long kernel = fileTimeToInt64(kernelTime);
         unsigned long long user = fileTimeToInt64(userTime);
         currentUsage = calculateCPULoad(idle, kernel + user) * 100.0;
+        
+        if (currentUsage > 80.0) {
+            char buf[128];
+            snprintf(buf, sizeof(buf), "[WARNING] High CPU Usage detected: %.1f%%", currentUsage);
+            AlertManager::getInstance().addAlert(buf);
+        }
     }
 }
 

@@ -74,18 +74,43 @@ void ProcessMonitor::display(int startRow, int startCol) {
 }
 
 #include "vendor/imgui/imgui.h"
+#include "vendor/imgui/imgui.h"
+#include "AlertManager.h"
 void ProcessMonitor::renderGUI() {
     ImGui::Text("Top Processes (by Memory)");
-    if (ImGui::BeginTable("Processes", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+    
+    // Interactive Task Killer
+    if (ImGui::Button("End Task (Kill Process)", ImVec2(200, 0))) {
+        if (selectedProcessIndex >= 0 && selectedProcessIndex < topProcesses.size()) {
+            DWORD pidToKill = topProcesses[selectedProcessIndex].pid;
+            HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pidToKill);
+            if (hProcess != NULL) {
+                TerminateProcess(hProcess, 0);
+                CloseHandle(hProcess);
+                AlertManager::getInstance().addAlert("[INFO] Terminated process PID: " + std::to_string(pidToKill));
+            } else {
+                AlertManager::getInstance().addAlert("[ERROR] Failed to terminate PID: " + std::to_string(pidToKill) + " (Access Denied?)");
+            }
+        }
+    }
+
+    if (ImGui::BeginTable("Processes", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, 150))) {
         ImGui::TableSetupColumn("PID");
         ImGui::TableSetupColumn("Name");
         ImGui::TableSetupColumn("Memory (MB)");
         ImGui::TableHeadersRow();
 
-        for (const auto& proc : topProcesses) {
+        for (int i = 0; i < topProcesses.size(); i++) {
+            const auto& proc = topProcesses[i];
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
-            ImGui::Text("%lu", proc.pid);
+            
+            char label[32];
+            sprintf(label, "%lu##%d", proc.pid, i);
+            if (ImGui::Selectable(label, selectedProcessIndex == i, ImGuiSelectableFlags_SpanAllColumns)) {
+                selectedProcessIndex = i;
+            }
+            
             ImGui::TableNextColumn();
             ImGui::Text("%s", proc.name.c_str());
             ImGui::TableNextColumn();

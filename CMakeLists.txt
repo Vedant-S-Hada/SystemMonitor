@@ -13,6 +13,8 @@ set(SOURCES
     RAMMonitor.cpp
     DiskMonitor.cpp
     ProcessMonitor.cpp
+    NetworkMonitor.cpp
+    AlertManager.cpp
     vendor/imgui/imgui.cpp
     vendor/imgui/imgui_draw.cpp
     vendor/imgui/imgui_tables.cpp
@@ -27,5 +29,5 @@ add_executable(SystemMonitorGUI WIN32 ${SOURCES})
 target_compile_definitions(SystemMonitorGUI PRIVATE _WIN32_WINNT=0x0600)
 
 # Link required Windows libraries
-target_link_libraries(SystemMonitorGUI psapi d3d11 d3dcompiler dxgi dwmapi)
+target_link_libraries(SystemMonitorGUI psapi d3d11 d3dcompiler dxgi dwmapi iphlpapi)
 target_link_options(SystemMonitorGUI PRIVATE -static)

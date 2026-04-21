@@ -1,4 +1,5 @@
 #include "RAMMonitor.h"
+#include "AlertManager.h"
 #include <iostream>
 #include <iomanip>
 
@@ -13,6 +14,12 @@ void RAMMonitor::refresh() {
     double availRAM_GB = memInfo.ullAvailPhys / (1024.0 * 1024.0 * 1024.0);
     usedRAM_GB = totalRAM_GB - availRAM_GB;
     usagePercent = (usedRAM_GB / totalRAM_GB) * 100.0;
+
+    if (usagePercent > 80.0) {
+        char buf[128];
+        snprintf(buf, sizeof(buf), "[WARNING] High RAM Usage detected: %.1f%%", usagePercent);
+        AlertManager::getInstance().addAlert(buf);
+    }
 }
 
 void RAMMonitor::display(int startRow, int startCol) {
