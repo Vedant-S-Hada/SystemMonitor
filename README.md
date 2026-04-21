@@ -5,8 +5,11 @@ A high-performance, native Windows system resource monitor built in **C++** usin
 This application fetches live hardware metrics (CPU, RAM, Disk, and Process memory) using deep Windows APIs and renders them in a beautiful, hardware-accelerated GUI using **Dear ImGui** and **DirectX 11**.
 
 ## ✨ Features
-* **Live Hardware Telemetry:** Accurately tracks CPU load, Physical RAM consumption, and Disk Space.
-* **Top Processes Tracking:** Scans running applications to display the top 5 memory-heavy processes in real-time.
+* **Live Hardware Telemetry:** Accurately tracks CPU load, Physical RAM consumption, Network Traffic, and Disk Space.
+* **Top Processes Tracking:** Scans running applications to display the top memory-heavy processes in real-time.
+* **Smart Suggestion Engine:** Automatically identifies and suggests closing applications that consume massive amounts of RAM (e.g., > 500MB).
+* **Interactive Task Killer:** Allows the user to select and securely terminate processes directly from the UI using Windows kernel APIs.
+* **Anomaly Alert Console:** An integrated scrolling console that alerts the user when hardware thresholds (like 80% CPU/RAM) are exceeded.
 * **Hardware-Accelerated UI:** Replaced standard console output with a fluid, 60fps graphical interface.
 * **Zero Flicker:** Uses ImGui's immediate-mode rendering instead of legacy terminal clearing.
 * **Standalone Executable:** Fully statically linked—runs out of the box with zero dependencies.
@@ -15,9 +18,10 @@ This application fetches live hardware metrics (CPU, RAM, Disk, and Process memo
 This project was strictly designed using Object-Oriented principles to ensure extensibility and clean code:
 
 * **Abstraction (`Monitor` Base Class):** Defines a strict contract with pure virtual functions like `refresh()` and `renderGUI()`.
-* **Inheritance:** Specific hardware components (`CPUMonitor`, `RAMMonitor`, `DiskMonitor`, `ProcessMonitor`) inherit from the base class and implement their own OS-specific fetching logic.
-* **Polymorphism:** The `Dashboard` orchestrator manages a polymorphic container (`std::vector<std::unique_ptr<Monitor>>`). During the main application loop, it simply iterates through this collection and calls `.renderGUI()`, entirely relying on dynamic dispatch.
-* **Encapsulation:** All underlying Windows API calls (like `GetSystemTimes`, `GlobalMemoryStatusEx`, and `EnumProcesses`) are safely hidden inside their respective classes.
+* **Inheritance:** Specific hardware components (`CPUMonitor`, `RAMMonitor`, `DiskMonitor`, `ProcessMonitor`, `NetworkMonitor`) inherit from the base class and implement their own OS-specific fetching logic.
+* **Polymorphism & Open-Closed Principle:** The `Dashboard` orchestrator manages a polymorphic container (`std::vector<std::unique_ptr<Monitor>>`). We extended the system with a `NetworkMonitor` without modifying the core drawing loop, relying purely on dynamic dispatch.
+* **Observer Pattern:** Implemented an `AlertManager` singleton. Hardware monitors act as Subjects and notify the AlertManager when specific thresholds are breached or when the Suggestion Engine flags a process.
+* **Encapsulation:** All underlying Windows API calls (like `GetSystemTimes`, `GlobalMemoryStatusEx`, `EnumProcesses`, `GetIfTable`, `TerminateProcess`) are safely hidden inside their respective classes.
 
 ## 🛠️ Tech Stack
 * **Language:** C++17

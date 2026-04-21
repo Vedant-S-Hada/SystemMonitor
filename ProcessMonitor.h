@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <windows.h>
+#include <set>
 
 struct ProcessInfo {
     unsigned long pid;
@@ -14,6 +15,7 @@ class ProcessMonitor : public Monitor {
 private:
     std::vector<ProcessInfo> topProcesses;
     int selectedProcessIndex = -1;
+    std::set<DWORD> warnedPids;
 public:
     ProcessMonitor();
     void refresh() override;

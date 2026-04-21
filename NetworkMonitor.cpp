@@ -8,33 +8,35 @@ NetworkMonitor::NetworkMonitor() : uploadSpeedKB(0), downloadSpeedKB(0), prevByt
 }
 
 void NetworkMonitor::refresh() {
-    MIB_IF_TABLE2* table = nullptr;
-    if (GetIfTable2(&table) == NO_ERROR) {
-        unsigned long long currentBytesSent = 0;
-        unsigned long long currentBytesReceived = 0;
+    DWORD dwSize = 0;
+    if (GetIfTable(NULL, &dwSize, FALSE) == ERROR_INSUFFICIENT_BUFFER) {
+        MIB_IFTABLE* pIfTable = (MIB_IFTABLE*)malloc(dwSize);
+        if (GetIfTable(pIfTable, &dwSize, FALSE) == NO_ERROR) {
+            unsigned long long currentBytesSent = 0;
+            unsigned long long currentBytesReceived = 0;
 
-        for (ULONG i = 0; i < table->NumEntries; ++i) {
-            // Include hardware interfaces
-            if (table->Table[i].InterfaceAndOperStatusFlags.HardwareInterface) {
-                currentBytesSent += table->Table[i].OutOctets;
-                currentBytesReceived += table->Table[i].InOctets;
+            for (DWORD i = 0; i < pIfTable->dwNumEntries; i++) {
+                // Ignore software loopback (type 24)
+                if (pIfTable->table[i].dwType != 24) { 
+                    currentBytesSent += pIfTable->table[i].dwOutOctets;
+                    currentBytesReceived += pIfTable->table[i].dwInOctets;
+                }
             }
-        }
 
-        DWORD currentTime = GetTickCount();
-        if (prevTime != 0) {
-            DWORD deltaTime = currentTime - prevTime;
-            if (deltaTime > 0) {
-                uploadSpeedKB = ((currentBytesSent - prevBytesSent) / 1024.0) / (deltaTime / 1000.0);
-                downloadSpeedKB = ((currentBytesReceived - prevBytesReceived) / 1024.0) / (deltaTime / 1000.0);
+            DWORD currentTime = GetTickCount();
+            if (prevTime != 0) {
+                DWORD deltaTime = currentTime - prevTime;
+                if (deltaTime > 0) {
+                    uploadSpeedKB = ((currentBytesSent - prevBytesSent) / 1024.0) / (deltaTime / 1000.0);
+                    downloadSpeedKB = ((currentBytesReceived - prevBytesReceived) / 1024.0) / (deltaTime / 1000.0);
+                }
             }
+
+            prevBytesSent = currentBytesSent;
+            prevBytesReceived = currentBytesReceived;
+            prevTime = currentTime;
         }
-
-        prevBytesSent = currentBytesSent;
-        prevBytesReceived = currentBytesReceived;
-        prevTime = currentTime;
-
-        FreeMibTable(table);
+        free(pIfTable);
     }
 
     // Update histories

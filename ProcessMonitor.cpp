@@ -1,4 +1,5 @@
 #include "ProcessMonitor.h"
+#include "AlertManager.h"
 #include <psapi.h>
 #include <iostream>
 #include <iomanip>
@@ -46,6 +47,17 @@ void ProcessMonitor::refresh() {
         currentProcs.resize(5);
     }
     topProcesses = currentProcs;
+
+    // Suggestion Engine
+    for (const auto& proc : topProcesses) {
+        if (proc.memUsage > 500ULL * 1024ULL * 1024ULL) { // Greater than 500 MB
+            if (warnedPids.find(proc.pid) == warnedPids.end()) {
+                warnedPids.insert(proc.pid);
+                std::string msg = "[SUGGESTION] '" + proc.name + "' is using heavy memory (" + std::to_string(proc.memUsage / (1024*1024)) + " MB). Consider ending it.";
+                AlertManager::getInstance().addAlert(msg);
+            }
+        }
+    }
 }
 
 void ProcessMonitor::display(int startRow, int startCol) {
@@ -74,8 +86,6 @@ void ProcessMonitor::display(int startRow, int startCol) {
 }
 
 #include "vendor/imgui/imgui.h"
-#include "vendor/imgui/imgui.h"
-#include "AlertManager.h"
 void ProcessMonitor::renderGUI() {
     ImGui::Text("Top Processes (by Memory)");
     
